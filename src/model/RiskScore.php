@@ -1,25 +1,34 @@
 <?php
 
 class RiskScore {
-    private int $auto_score;
-    private int $disability_score;
-    private int $home_score;
-    private int $life_score;
+    protected ?int $auto_score;
+    protected ?int $disability_score;
+    protected ?int $home_score;
+    protected ?int $life_score;
 
     public function calculate(UserProfile $user_profile): self {
         $this->initializeWithBaseScore($user_profile->getRiskQuestions());
 
         $this->calculateForAge($user_profile->getAge());
         $this->calculateForIncome($user_profile->getIncome());
-        $this->calculateForHousingStatus($user_profile->getHouse()->getOwnershipStatus());
+
+        if (!is_null($user_profile->getHouse())) {
+            $this->calculateForHousingStatus($user_profile->getHouse()->getOwnershipStatus());
+        }
+
         $this->calculateForDependents($user_profile->getDependents());
         $this->calculateForMaritalStatus($user_profile->isMarried());
-        $this->calculateForVehicle($user_profile->getVehicle()->getYear());
+
+        if (!is_null($user_profile->getVehicle())) {
+            $this->calculateForVehicle($user_profile->getVehicle()->getYear());
+        }
+
+        $this->checkIfIneligible($user_profile);
 
         return $this;
     }
 
-    private function calculateForAge(int $age): void {
+    protected function calculateForAge(int $age): void {
         if ($age < 30) {
             $this->deductFromAllInsuranceLines(2);
         }
@@ -29,37 +38,56 @@ class RiskScore {
         }
     }
 
-    private function calculateForIncome(int $income): void {
+    protected function calculateForIncome(int $income): void {
         if ($income > 200.000) {
             $this->deductFromAllInsuranceLines(1);
         }
     }
 
-    private function calculateForHousingStatus(string $house_ownership_status): void {
+    protected function calculateForHousingStatus(?string $house_ownership_status): void {
         if ($house_ownership_status === 'mortgaged') {
             $this->addToHomeScore(1);
             $this->addToDisabilityScore(1);
         }
     }
 
-    private function calculateForDependents(int $dependents): void {
+    protected function calculateForDependents(int $dependents): void {
         if ($dependents > 0) {
             $this->addToDisabilityScore(1);
             $this->addToLifeScore(1);
         }
     }
 
-    private function calculateForMaritalStatus(bool $is_married): void {
+    protected function calculateForMaritalStatus(bool $is_married): void {
         if ($is_married) {
             $this->addToLifeScore(1);
             $this->deductFromDisabilityLine(1);
         }
     }
 
-    private function calculateForVehicle(int $year): void {
+    protected function calculateForVehicle(?int $year): void {
         $was_produced_in_the_last_5_years = $year > (getdate()['year'] - 5);
         if ($was_produced_in_the_last_5_years) {
             $this->addToAutoScore(1);
+        }
+    }
+    
+    protected function checkIfIneligible(UserProfile $userProfile): void {
+        if ($userProfile->getIncome() === 0) {
+            $this->disability_score = null;
+        }
+
+        if (is_null($userProfile->getVehicle())) {
+            $this->auto_score = null;
+        }
+
+        if (is_null($userProfile->getHouse())) {
+            $this->home_score = null;
+        }
+
+        if ($userProfile->getAge() > 60) {
+            $this->disability_score = null;
+            $this->life_score = null;
         }
     }
 
@@ -111,20 +139,24 @@ class RiskScore {
         $this->auto_score += $point;
     }
 
-    public function getLifeScore(): int {
+    public function getLifeScore(): ?int {
         return $this->life_score;
     }
 
-    public function getAutoScore(): int {
+    public function getAutoScore(): ?int {
         return $this->auto_score;
     }
 
-    public function getDisabilityScore(): int {
+    public function getDisabilityScore(): ?int {
         return $this->disability_score;
     }
 
-    public function getHomeScore(): int {
+    public function getHomeScore(): ?int {
         return $this->home_score;
+    }
+
+    public function getObjectVariables(): array {
+        return get_object_vars($this);
     }
 
 }

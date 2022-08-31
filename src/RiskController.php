@@ -60,10 +60,10 @@ class RiskController extends BaseController {
             $parameters['age'],
             $parameters['dependents'],
             $parameters['income'],
-            new House($parameters['house']['ownership_status']),
+            new House($parameters['house']['ownership_status'] ?? null),
             $parameters['marital_status'] === 'married',
             $parameters['risk_questions'],
-            new Vehicle($parameters['vehicle']['year'])
+            new Vehicle($parameters['vehicle']['year'] ?? null)
         );
     }
 }

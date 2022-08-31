@@ -12,17 +12,21 @@ class RiskScoreToRiskProfileMapper {
         );
     }
 
-    private static function getProfileForScore(int $line_score) {
+    private static function getProfileForScore(?int $line_score) {
+        if (is_null($line_score)) {
+            return RiskProfile::INELIGIBLE;
+        }
+
         if ($line_score <= 0) {
-            return "economic";
+            return RiskProfile::ECONOMIC;
         }
 
         if ($line_score === 1 || $line_score === 2) {
-            return "regular";
+            return RiskProfile::REGULAR;
         }
 
         if ($line_score >= 3) {
-            return "responsible";
+            return RiskProfile::RESPONSIBLE;
         }
     }
 

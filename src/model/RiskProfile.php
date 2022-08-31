@@ -1,6 +1,11 @@
 <?php
 
 class RiskProfile implements JsonSerializable {
+    public const INELIGIBLE = "ineligible";
+    public const ECONOMIC = "economic";
+    public const REGULAR = "regular";
+    public const RESPONSIBLE = "responsible";
+
     private string $auto;
     private string $disability;
     private string $home;

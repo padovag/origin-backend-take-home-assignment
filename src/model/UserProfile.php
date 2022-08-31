@@ -4,12 +4,12 @@ class UserProfile {
     private int $age;
     private int $dependents;
     private int $income;
-    private House $house;
+    private ?House $house;
     private bool $is_married;
     private array $risk_questions;
-    private Vehicle $vehicle;
+    private ?Vehicle $vehicle;
 
-    public function __construct(int $age, int $dependents, int $income, House $house, string $is_married, array $risk_questions, Vehicle $vehicle) {
+    public function __construct(int $age, int $dependents, int $income, ?House $house, bool $is_married, array $risk_questions, ?Vehicle $vehicle) {
         $this->age = $age;
         $this->dependents = $dependents;
         $this->income = $income;
@@ -31,7 +31,7 @@ class UserProfile {
         return $this->income;
     }
 
-    public function getHouse(): House {
+    public function getHouse(): ?House {
         return $this->house;
     }
 
@@ -43,7 +43,7 @@ class UserProfile {
         return $this->risk_questions;
     }
 
-    public function getVehicle(): Vehicle {
+    public function getVehicle(): ?Vehicle {
         return $this->vehicle;
     }
 

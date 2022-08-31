@@ -16,6 +16,10 @@ class BaseController {
         }
     }
 
+    protected function exitRequest(): void {
+        exit();
+    }
+
     protected function validate(array $rules, array $parameters): void {
         $errors = [];
         foreach ($rules as $key => $rule) {
@@ -34,7 +38,6 @@ class BaseController {
     protected function sendSuccessResponse(object $response_object) {
         http_response_code(200);
         echo json_encode($response_object);
-        exit();
     }
 
     protected function sendErrorResponse(string $status_code, string $status_message): void {
@@ -43,10 +46,10 @@ class BaseController {
             "status_code" => $status_code,
             "status_message" => $status_message
         ]);
-        exit();
+        $this->exitRequest();
     }
 
-    private function validateRequired(bool $required, string $key, $value, array $errors): array {
+    private function validateRequired(?bool $required, string $key, $value, array $errors): array {
         if ($required && is_null($value)) {
             $errors[] = "{$key} is required";
         }
