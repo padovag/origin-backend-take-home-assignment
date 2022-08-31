@@ -1,12 +1,22 @@
 <?php
 require __DIR__ . '/BaseController.php';
+require __DIR__ . '/model/RiskScore.php';
+require __DIR__ . '/model/RiskScoreToRiskProfileMapper.php';
+require __DIR__ . '/model/UserProfile.php';
+require __DIR__ . '/model/House.php';
+require __DIR__ . '/model/Vehicle.php';
 
 class RiskController extends BaseController {
-    public function calculate($parameters) {
+    public function calculate(array $parameters) {
         $this->validate($this->getRules(), $parameters);
+
+        $risk_score = (new RiskScore())->calculate($this->buildUserProfile($parameters));
+        $risk_profile = RiskScoreToRiskProfileMapper::map($risk_score);
+
+        $this->sendSuccessResponse($risk_profile);
     }
 
-    public function getRules(): array {
+    private function getRules(): array {
         return [
             'age' => ['required' => true, 'format' => 'integer'],
             'dependents' => ['required' => true, 'format' => 'integer'],
@@ -43,5 +53,17 @@ class RiskController extends BaseController {
                 ]
             ]
         ];
+    }
+
+    private function buildUserProfile($parameters): UserProfile {
+        return new UserProfile(
+            $parameters['age'],
+            $parameters['dependents'],
+            $parameters['income'],
+            new House($parameters['house']['ownership_status']),
+            $parameters['marital_status'] === 'married',
+            $parameters['risk_questions'],
+            new Vehicle($parameters['vehicle']['year'])
+        );
     }
 }

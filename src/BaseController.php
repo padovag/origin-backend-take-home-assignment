@@ -31,13 +31,19 @@ class BaseController {
         }
     }
 
-    private function sendErrorResponse(string $status_code, string $status_message): void {
+    protected function sendSuccessResponse(object $response_object) {
+        http_response_code(200);
+        echo json_encode($response_object);
+        exit();
+    }
+
+    protected function sendErrorResponse(string $status_code, string $status_message): void {
         http_response_code($status_code);
         echo json_encode([
             "status_code" => $status_code,
             "status_message" => $status_message
         ]);
-        exit;
+        exit();
     }
 
     private function validateRequired(bool $required, string $key, $value, array $errors): array {
